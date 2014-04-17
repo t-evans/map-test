@@ -26,66 +26,74 @@
             getPolylineForSwimSection = function(swimSection) {
                 return googlePolylines[swimSection[0].coords];
             },
+            _swimSections = undefined,
             getSwimSections = function() {
-
+                if (typeof _swimSections === 'undefined') {
+                    _swimSections = [];
+                    var swimSection = [];
+                    $.each(swimData, function(index, dataPoint) {
+                        if (dataPoint.coords.length) {
+                            swimSection.push(dataPoint);
+                        }
+                        else {
+                            _swimSections.push(swimSection);
+                            swimSection = [];
+                            if (index - 1 >= 0) {
+                                var lastDataPointFromPreviousSection = swimData[index-1];
+                                swimSection.push(lastDataPointFromPreviousSection);
+                            }
+                        }
+                    });
+                    if (swimSection.length)
+                        _swimSections.push(swimSection);
+                }
+                return _swimSections;
             },
             renderGoogleMap = function() {
-            var addPolylineForSwimSection = function(map, swimSection) {
-                    if (swimSection.length === 0)
-                        return;
-                    var swimCoordinates = [],
-                        poly;
+                var addPolylineForSwimSection = function(map, swimSection) {
+                        if (swimSection.length === 0)
+                            return;
+                        var swimCoordinates = [],
+                            poly;
 
-                    $.each(swimSection, function(index, point) {
-                        var parsedCoords = point.coords.split(',');
-                        swimCoordinates.push(new google.maps.LatLng(parsedCoords[0], parsedCoords[1]));
-                    });
-                    polyline = new google.maps.Polyline({
-                        path: swimCoordinates,
-                        geodesic: true,
-                        strokeColor: swimSection[0].color,
-                        strokeOpacity: 1.0,
-                        strokeWeight: 3
-                    });
-                    setPolylineForSwimSection(polyline, swimSection);
-                    polyline.setMap(map);
-                },
-                mapOptions = {
-                    zoom: 16,
-                    center: new google.maps.LatLng(40.371766,-111.974804),
-                    mapTypeId: google.maps.MapTypeId.SATELLITE,
-                    scrollwheel: false
-                },
-                mapCanvas = document.getElementById('google-canvas'),
-                googleMap;
-            googleMap = new google.maps.Map(mapCanvas, mapOptions);
-            var swimSections = [];
-            var swimSection = [];
-            $.each(swimData, function(index, dataPoint) {
-                if (dataPoint.coords.length)
-                    swimSection.push(dataPoint);
-                else {
-                    swimSections.push(swimSection);
-                    swimSection = [];
-                }
-            });
-            $.each(swimSections, function(index, swimSection) {
-                addPolylineForSwimSection(googleMap, swimSection);
-            });
-            if (swimSection.length)
-                addPolylineForSwimSection(googleMap, swimSection);
-        },
-        bingCreds = 'AqkJRBF3Octt5PVDxeLaaPtR998fJ2pqpMGJY9sCYAckKvUlHvcFLw6PxZnFvH7i',
-        renderBingMap = function() {
-//            $('#bing-canvas').gmap({'credentials': bingCreds}).bind('init', function(ev, map) {
-////                $('#bing-canvas').gmap('Polyline', {
-////                    'paths': polylinesCoords,
-////                    'strokeColor': new Microsoft.Maps.Color(200, 100, 0, 100),
-////                    'strokeThickness': 5,
-////                    'strokeDashArray': '5 2'
-////                });
-//            });
-        };
+                        $.each(swimSection, function(index, point) {
+                            var parsedCoords = point.coords.split(',');
+                            swimCoordinates.push(new google.maps.LatLng(parsedCoords[0], parsedCoords[1]));
+                        });
+                        polyline = new google.maps.Polyline({
+                            path: swimCoordinates,
+                            geodesic: true,
+                            strokeColor: swimSection[0].color,
+                            strokeOpacity: 1.0,
+                            strokeWeight: 3
+                        });
+                        setPolylineForSwimSection(polyline, swimSection);
+                        polyline.setMap(map);
+                    },
+                    mapOptions = {
+                        zoom: 16,
+                        center: new google.maps.LatLng(40.371766,-111.974804),
+                        mapTypeId: google.maps.MapTypeId.SATELLITE,
+                        scrollwheel: false
+                    },
+                    mapCanvas = document.getElementById('google-canvas'),
+                    googleMap;
+                googleMap = new google.maps.Map(mapCanvas, mapOptions);
+                $.each(getSwimSections(), function(index, swimSection) {
+                    addPolylineForSwimSection(googleMap, swimSection);
+                });
+            },
+            bingCreds = 'AqkJRBF3Octt5PVDxeLaaPtR998fJ2pqpMGJY9sCYAckKvUlHvcFLw6PxZnFvH7i',
+            renderBingMap = function() {
+    //            $('#bing-canvas').gmap({'credentials': bingCreds}).bind('init', function(ev, map) {
+    ////                $('#bing-canvas').gmap('Polyline', {
+    ////                    'paths': polylinesCoords,
+    ////                    'strokeColor': new Microsoft.Maps.Color(200, 100, 0, 100),
+    ////                    'strokeThickness': 5,
+    ////                    'strokeDashArray': '5 2'
+    ////                });
+    //            });
+            };
 
         $(function() {
             renderGoogleMap();
