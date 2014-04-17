@@ -136,7 +136,8 @@
                         zoom: 16,
                         center: new Microsoft.Maps.Location(40.371766,-111.974804),
                         mapTypeId: Microsoft.Maps.MapTypeId.aerial,
-                        enableClickableLogo: false
+                        enableClickableLogo: false,
+                        useInertia: false
                     },
                     mapCanvas = document.getElementById('bing-canvas'),
                     bingMap;
@@ -156,18 +157,23 @@
             };
 
         $(function() {
-            renderGoogleMap();
-            renderBingMap();
+            $('#render-google-map').click(renderGoogleMap);
+            $('#render-bing-map').click(renderBingMap);
         });
     </script>
 </head>
 <body>
-    <p>Google Canvas</p>
-    <div id='google-canvas' class="map-canvas">
-    </div>
-
-    <p>Bing Canvas</p>
-    <div id='bing-canvas' class="map-canvas">
+    <div style="position: relative;">
+        <div style="float: left">
+            <button id="render-google-map">Render Google Map</button>
+            <div id='google-canvas' class="map-canvas">
+            </div>
+        </div>
+        <div style="float: left">
+            <button id="render-bing-map">Render Bing Map</button>
+            <div id='bing-canvas' class="map-canvas">
+            </div>
+        </div>
     </div>
 </body>
 </html>
