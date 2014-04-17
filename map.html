@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Workout plot</title>
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="swimData.js"></script>
+
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=true&libraries=geometry"></script>
+
+    <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+    <script type="text/javascript" src="lib/jquery.ui.bmap.js"></script>
+    <script type="text/javascript" src="lib/jquery.ui.bmap.overlays.js"></script>
+
+    <style>
+        .map-canvas {
+            width: 600px;
+            height: 450px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var googlePolylines = {},
+            setPolylineForSwimSection = function(polyline, swimSection) {
+                googlePolylines[swimSection[0].coords] = polyline;
+            },
+            getPolylineForSwimSection = function(swimSection) {
+                return googlePolylines[swimSection[0].coords];
+            },
+            getSwimSections = function() {
+
+            },
+            renderGoogleMap = function() {
+            var addPolylineForSwimSection = function(map, swimSection) {
+                    if (swimSection.length === 0)
+                        return;
+                    var swimCoordinates = [],
+                        poly;
+
+                    $.each(swimSection, function(index, point) {
+                        var parsedCoords = point.coords.split(',');
+                        swimCoordinates.push(new google.maps.LatLng(parsedCoords[0], parsedCoords[1]));
+                    });
+                    polyline = new google.maps.Polyline({
+                        path: swimCoordinates,
+                        geodesic: true,
+                        strokeColor: swimSection[0].color,
+                        strokeOpacity: 1.0,
+                        strokeWeight: 3
+                    });
+                    setPolylineForSwimSection(polyline, swimSection);
+                    polyline.setMap(map);
+                },
+                mapOptions = {
+                    zoom: 16,
+                    center: new google.maps.LatLng(40.371766,-111.974804),
+                    mapTypeId: google.maps.MapTypeId.SATELLITE,
+                    scrollwheel: false
+                },
+                mapCanvas = document.getElementById('google-canvas'),
+                googleMap;
+            googleMap = new google.maps.Map(mapCanvas, mapOptions);
+            var swimSections = [];
+            var swimSection = [];
+            $.each(swimData, function(index, dataPoint) {
+                if (dataPoint.coords.length)
+                    swimSection.push(dataPoint);
+                else {
+                    swimSections.push(swimSection);
+                    swimSection = [];
+                }
+            });
+            $.each(swimSections, function(index, swimSection) {
+                addPolylineForSwimSection(googleMap, swimSection);
+            });
+            if (swimSection.length)
+                addPolylineForSwimSection(googleMap, swimSection);
+        },
+        bingCreds = 'AqkJRBF3Octt5PVDxeLaaPtR998fJ2pqpMGJY9sCYAckKvUlHvcFLw6PxZnFvH7i',
+        renderBingMap = function() {
+//            $('#bing-canvas').gmap({'credentials': bingCreds}).bind('init', function(ev, map) {
+////                $('#bing-canvas').gmap('Polyline', {
+////                    'paths': polylinesCoords,
+////                    'strokeColor': new Microsoft.Maps.Color(200, 100, 0, 100),
+////                    'strokeThickness': 5,
+////                    'strokeDashArray': '5 2'
+////                });
+//            });
+        };
+
+        $(function() {
+            renderGoogleMap();
+            renderBingMap();
+        });
+    </script>
+</head>
+<body>
+    <p>Google Canvas</p>
+    <div id='google-canvas' class="map-canvas">
+    </div>
+
+    <p>Bing Canvas</p>
+    <div id='bing-canvas' class="map-canvas">
+    </div>
+</body>
+</html>
