@@ -157,20 +157,20 @@
             };
 
         $(function() {
-            $('#render-google-map').click(renderGoogleMap);
-            $('#render-bing-map').click(renderBingMap);
+            renderGoogleMap();
+            renderBingMap();
         });
     </script>
 </head>
 <body>
     <div style="position: relative;">
         <div style="float: left">
-            <button id="render-google-map">Render Google Map</button>
+            <div>Google</div>
             <div id='google-canvas' class="map-canvas">
             </div>
         </div>
         <div style="float: left">
-            <button id="render-bing-map">Render Bing Map</button>
+            <div>Bing</div>
             <div id='bing-canvas' class="map-canvas">
             </div>
         </div>
