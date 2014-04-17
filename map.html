@@ -15,16 +15,24 @@
         .map-canvas {
             width: 600px;
             height: 450px;
+            position: relative;
         }
     </style>
 
     <script type="text/javascript">
         var googlePolylines = {},
-            setPolylineForSwimSection = function(polyline, swimSection) {
+            setGooglePolylineForSwimSection = function(polyline, swimSection) {
                 googlePolylines[swimSection[0].coords] = polyline;
             },
-            getPolylineForSwimSection = function(swimSection) {
+            getGooglePolylineForSwimSection = function(swimSection) {
                 return googlePolylines[swimSection[0].coords];
+            },
+            bingPolylines = {},
+            setBingPolylineForSwimSection = function(polyline, swimSection) {
+                bingPolylines[swimSection[0].coords] = polyline;
+            },
+            getBingPolylineForSwimSection = function(swimSection) {
+                return bingPolylines[swimSection[0].coords];
             },
             _swimSections = undefined,
             getSwimSections = function() {
@@ -54,7 +62,7 @@
                         if (swimSection.length === 0)
                             return;
                         var swimCoordinates = [],
-                            poly;
+                            polyline;
 
                         $.each(swimSection, function(index, point) {
                             var parsedCoords = point.coords.split(',');
@@ -67,7 +75,7 @@
                             strokeOpacity: 1.0,
                             strokeWeight: 3
                         });
-                        setPolylineForSwimSection(polyline, swimSection);
+                        setGooglePolylineForSwimSection(polyline, swimSection);
                         polyline.setMap(map);
                     },
                     mapOptions = {
@@ -85,14 +93,66 @@
             },
             bingCreds = 'AqkJRBF3Octt5PVDxeLaaPtR998fJ2pqpMGJY9sCYAckKvUlHvcFLw6PxZnFvH7i',
             renderBingMap = function() {
-    //            $('#bing-canvas').gmap({'credentials': bingCreds}).bind('init', function(ev, map) {
-    ////                $('#bing-canvas').gmap('Polyline', {
-    ////                    'paths': polylinesCoords,
-    ////                    'strokeColor': new Microsoft.Maps.Color(200, 100, 0, 100),
-    ////                    'strokeThickness': 5,
-    ////                    'strokeDashArray': '5 2'
-    ////                });
-    //            });
+                var convertToMicrosoftColor = function(color) {
+                        var microsoftColor;
+                        switch (color) {
+                            case 'red':
+                                microsoftColor = new Microsoft.Maps.Color(255,255,0,0);
+                                break;
+                            case 'green':
+                                microsoftColor = new Microsoft.Maps.Color(255,0,255,0);
+                                break;
+                            case 'orange':
+                                microsoftColor = new Microsoft.Maps.Color(255,0,0,255);
+                                break;
+                            case 'yellow':
+                                microsoftColor = new Microsoft.Maps.Color(255,255,255,0);
+                                break;
+                            case 'purple':
+                                microsoftColor = new Microsoft.Maps.Color(255,255,0,255);
+                                break;
+                        }
+                        return microsoftColor;
+                    },
+                    addPolylineForSwimSection = function(map, swimSection) {
+                        if (swimSection.length === 0)
+                            return;
+
+                        var swimCoordinates = [],
+                            polyline;
+
+                        $.each(swimSection, function(index, point) {
+                            var parsedCoords = point.coords.split(',');
+                            swimCoordinates.push(new Microsoft.Maps.Location(parseFloat(parsedCoords[0]), parseFloat(parsedCoords[1])));
+                        });
+                        polyline = new Microsoft.Maps.Polyline(swimCoordinates, {
+                            strokeColor: convertToMicrosoftColor(swimSection[0].color),
+                            strokeThickness: 3
+                        });
+                        map.entities.push(polyline);
+                    },
+                    mapOptions = {
+                        credentials: bingCreds,
+                        zoom: 16,
+                        center: new Microsoft.Maps.Location(40.371766,-111.974804),
+                        mapTypeId: Microsoft.Maps.MapTypeId.aerial,
+                        enableClickableLogo: false
+                    },
+                    mapCanvas = document.getElementById('bing-canvas'),
+                    bingMap;
+                bingMap = new Microsoft.Maps.Map(mapCanvas, mapOptions);
+
+                // Disable scroll-to-zoom
+                Microsoft.Maps.Events.addHandler(bingMap, 'mousewheel', function(e) {
+                    e.handled = true;
+                    return true;
+                });
+                $.each(getSwimSections(), function(index, swimSection) {
+                    if (index < 57)
+                        addPolylineForSwimSection(bingMap, swimSection);
+                    else
+                        addPolylineForSwimSection(bingMap, swimSection);
+                });
             };
 
         $(function() {
